@@ -13,13 +13,13 @@ class EntryPage extends StatefulWidget {
 class _EntryPageState extends State<EntryPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _movieNameController = TextEditingController();
-  final TextEditingController _posterController = TextEditingController();
   final TextEditingController _releaseYearController = TextEditingController();
   final TextEditingController _imdbLinkController = TextEditingController();
   final TextEditingController _plotController = TextEditingController();
   final TextEditingController _ottPlatformController = TextEditingController();
   final TextEditingController _watchedDateController = TextEditingController();
   String _movieStatus = 'watchlist';
+  String? _poster;
   List<String> _photos = [];
 
   late Future<Database> _database;
@@ -53,7 +53,7 @@ class _EntryPageState extends State<EntryPage> {
 
       Map<String, dynamic> movie = {
         'name': _movieNameController.text,
-        'poster': _posterController.text,
+        'poster': _poster,
         'releaseYear': int.parse(_releaseYearController.text),
         'imdbLink': _imdbLinkController.text,
         'plot': _plotController.text,
@@ -83,7 +83,7 @@ class _EntryPageState extends State<EntryPage> {
       if (pickedFile != null) {
         final bytes = File(pickedFile.path).readAsBytesSync();
         setState(() {
-          _posterController.text = base64Encode(bytes);
+          _poster = base64Encode(bytes);
         });
         print('Poster picked and encoded');
       }
@@ -143,6 +143,10 @@ class _EntryPageState extends State<EntryPage> {
           key: _formKey,
           child: ListView(
             children: <Widget>[
+              Text(
+                'Name',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               TextFormField(
                 controller: _movieNameController,
                 decoration: InputDecoration(labelText: 'Movie Name'),
@@ -153,17 +157,35 @@ class _EntryPageState extends State<EntryPage> {
                   return null;
                 },
               ),
-              TextFormField(
-                readOnly: true,
-                controller: _posterController,
-                decoration: InputDecoration(
-                  labelText: 'Poster',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.image),
-                    onPressed: _pickPoster,
+              SizedBox(height: 20),
+              Text(
+                'Poster',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              InkWell(
+                onTap: _pickPoster,
+                child: Container(
+                  width: 81,
+                  height: 144,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: _poster != null
+                      ? Image.memory(
+                          base64Decode(_poster!),
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.add, size: 50),
                 ),
               ),
+              SizedBox(height: 20),
+              Text(
+                'Release Year',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _releaseYearController,
                 decoration: InputDecoration(labelText: 'Release Year'),
@@ -175,6 +197,12 @@ class _EntryPageState extends State<EntryPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 20),
+              Text(
+                'IMDB url',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _imdbLinkController,
                 decoration: InputDecoration(labelText: 'IMDB Link'),
@@ -185,6 +213,12 @@ class _EntryPageState extends State<EntryPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 20),
+              Text(
+                'Plot',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _plotController,
                 decoration: InputDecoration(labelText: 'Plot'),
@@ -196,6 +230,12 @@ class _EntryPageState extends State<EntryPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 20),
+              Text(
+                'Ott Platform',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _ottPlatformController,
                 decoration: InputDecoration(labelText: 'OTT Platform'),
@@ -206,6 +246,7 @@ class _EntryPageState extends State<EntryPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -250,14 +291,39 @@ class _EntryPageState extends State<EntryPage> {
                     ),
                   ),
                 ),
-              TextFormField(
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Photos',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.photo_library),
-                    onPressed: _pickPhotos,
+              SizedBox(height: 20),
+              Text(
+                'Photos',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Wrap(
+                children: _photos
+                    .map((photo) => Container(
+                          margin: EdgeInsets.all(4),
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Image.memory(
+                            base64Decode(photo),
+                            fit: BoxFit.cover,
+                          ),
+                        ))
+                    .toList(),
+              ),
+              InkWell(
+                onTap: _pickPhotos,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Icon(Icons.add, size: 50),
                 ),
               ),
               SizedBox(height: 20),
@@ -294,11 +360,10 @@ class _EntryPageState extends State<EntryPage> {
     );
   }
 
-  @override
   void _clearForm() {
     _formKey.currentState?.reset();
     _movieNameController.clear();
-    _posterController.clear();
+    _poster = null;
     _releaseYearController.clear();
     _imdbLinkController.clear();
     _plotController.clear();
