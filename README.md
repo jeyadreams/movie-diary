@@ -1,6 +1,6 @@
 # fd
 
-A new Flutter project.
+Movie Diary
 
 ## Getting Started
 
